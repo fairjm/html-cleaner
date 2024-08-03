@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML Cleaner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.5s ease;
+    }
+
+    .container {
+      background: white;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 1000px;
+      transition: all 0.5s ease;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    #cleanForm {
+      display: flex;
+      margin-bottom: 1rem;
+    }
+
+    #urlInput {
+      flex-grow: 1;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px 0 0 4px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #result {
+      display: none;
+      margin-top: 2rem;
+    }
+
+    .result-item {
+      margin-bottom: 1rem;
+    }
+
+    .result-item strong {
+      color: #333;
+    }
+
+    #markdownContainer {
+      display: flex;
+      margin-top: 1rem;
+      height: 400px;
+    }
+
+    #markdownSource,
+    #markdownRendered {
+      width: 50%;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: auto;
+    }
+
+    #markdownSource {
+      font-family: monospace;
+      white-space: pre-wrap;
+      margin: 0;
+    }
+
+    #markdownRendered {
+      line-height: 1.6;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 900px;
+      border-radius: 10px;
+      max-height: 80vh;
+      overflow: auto;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    #jsonContent {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .github-link {
+      font-size: 24px;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .github-link:hover {
+      color: #0366d6;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-broom"></i> HTML Cleaner</h1>
+      <a href="https://github.com/fairjm/html-cleaner" target="_blank" class="github-link">
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <form id="cleanForm">
+      <input type="text" id="urlInput" placeholder="Enter URL" required>
+      <button type="submit" id="cleanBtn"><i class="fas fa-magic"></i> Clean</button>
+    </form>
+    <div id="result">
+      <div class="result-item"><strong>Title:</strong> <span id="title"></span></div>
+      <div class="result-item"><strong>Author:</strong> <span id="author"></span></div>
+      <div class="result-item"><strong>Date:</strong> <span id="date"></span></div>
+      <div class="result-item"><strong>description:</strong> <span id="description"></span></div>
+      <div class="result-item"><strong>Image:</strong>
+        <div id="image"></div>
+      </div>
+      <div class="result-item"><strong>Logo:</strong>
+        <div id="logo"></div>
+      </div>
+      <div class="result-item"><strong>publisher:</strong> <span id="publisher"></span></div>
+      <div class="result-item">
+        <strong>Content:</strong>
+        <button id="showContentBtn"><i class="fas fa-eye"></i> View Content</button>
+      </div>
+      <div class="result-item">
+        <strong>JSON:</strong>
+        <button id="showJsonBtn"><i class="fas fa-code"></i> View JSON</button>
+      </div>
+      <div class="result-item">
+        <strong>Markdown:</strong>
+        <div id="markdownContainer">
+          <pre id="markdownSource"><code class="language-markdown"></code></pre>
+          <div id="markdownRendered"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="contentModal" class="modal">
+    <div class="modal-content">
+      <span id="contentCloseBtn" class="close">&times;</span>
+      <h2>Content</h2>
+      <div id="content"></div>
+    </div>
+  </div>
+
+  <div id="jsonModal" class="modal">
+    <div class="modal-content">
+      <span id='jsonCloseBtn' class="close">&times;</span>
+      <h2>JSON Data</h2>
+      <pre id="jsonContent"></pre>
+    </div>
+  </div>
+
+  <script>
+    const cleanBtn = document.getElementById('cleanBtn');
+    const form = document.getElementById('cleanForm');
+    const result = document.getElementById('result');
+    const container = document.querySelector('.container');
+    const modal = document.getElementById('contentModal');
+    const closeBtn = document.getElementById('contentCloseBtn');
+    const showContentBtn = document.getElementById('showContentBtn');
+
+    const jsonModal = document.getElementById('jsonModal');
+    const showJsonBtn = document.getElementById('showJsonBtn');
+    const jsonContent = document.getElementById('jsonContent');
+    const jsonCloseBtn = document.getElementById('jsonCloseBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = document.getElementById('urlInput').value;
+
+      cleanBtn.disabled = true;
+      cleanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cleaning...';
+
+      try {
+        const response = await fetch('/api/clean', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url, html: null }),
+        });
+
+        const data = await response.json();
+
+        jsonContent.innerHTML = hljs.highlight(JSON.stringify(data, null, 2), { language: 'json' }).value;
+        document.getElementById('title').textContent = data.title;
+        document.getElementById('author').textContent = data.author;
+        document.getElementById('date').textContent = data.date;
+        document.getElementById('description').textContent = data.description;
+        document.getElementById('publisher').textContent = data.publisher;
+        document.getElementById('content').innerHTML = data.content;
+        if (data.image) {
+          document.getElementById('image').innerHTML = `<img src="${data.image}" alt="Article Image" style="max-width: 100%; height: auto;">`;
+        } else {
+          document.getElementById('image').textContent = 'No image available';
+        }
+
+        if (data.logo) {
+          document.getElementById('logo').innerHTML = `<img src="${data.logo}" alt="Publisher Logo" style="max-width: 100px; height: auto;">`;
+        } else {
+          document.getElementById('logo').textContent = 'No logo available';
+        }
+
+        const markdownSource = document.querySelector('#markdownSource code');
+        markdownSource.textContent = data.markdown;
+        hljs.highlightElement(markdownSource);
+
+        document.getElementById('markdownRendered').innerHTML = marked.parse(data.markdown);
+
+        result.style.display = 'block';
+        container.style.justifyContent = 'flex-start';
+        container.style.marginTop = '10px';
+        document.body.style.justifyContent = 'flex-start';
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        cleanBtn.disabled = false;
+        cleanBtn.innerHTML = '<i class="fas fa-magic"></i> Clean';
+      }
+    });
+
+    showContentBtn.onclick = () => {
+      modal.style.display = "block";
+    }
+
+    closeBtn.onclick = () => {
+      modal.style.display = "none";
+    }
+
+    showJsonBtn.onclick = () => {
+      jsonModal.style.display = "block";
+    }
+
+    jsonCloseBtn.onclick = () => {
+      jsonModal.style.display = "none";
+    }
+
+    window.onclick = (event) => {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+
+      if (event.target == jsonModal) {
+        jsonModal.style.display = "none";
+      }
+    }
+  </script>
+</body>
+
+</html>
