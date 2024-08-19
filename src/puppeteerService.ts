@@ -7,7 +7,7 @@ export async function getRenderedHtml(url: string): Promise<string> {
       headless: true
     });
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle0' });
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('body');
     await autoScroll(page);
     return await page.content();
@@ -22,17 +22,17 @@ async function autoScroll(page: Page) {
   await page.evaluate(async () => {
     await new Promise<void>((resolve) => {
       var totalHeight = 0;
-      var distance = 100;
+      var distance = 200;
       var timer = setInterval(() => {
         var scrollHeight = document.body.scrollHeight;
         window.scrollBy(0, distance);
         totalHeight += distance;
 
-        if (totalHeight >= scrollHeight) {
+        if (totalHeight >= scrollHeight || totalHeight > 8000) {
           clearInterval(timer);
           resolve();
         }
-      }, 100);
+      }, 50);
     });
   })
 }

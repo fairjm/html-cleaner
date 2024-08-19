@@ -1,7 +1,7 @@
 *.log
 doc/
 node_modules/
-
+logs/
 README.md
 
 .git
