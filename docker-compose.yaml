@@ -1,7 +1,9 @@
 version: '3.8'
 
 services:
-  app:
+  html-cleaner:
+    container_name: html-cleaner-server
+    image: html-cleaner-server:latest
     build:
       context: .
       dockerfile: Dockerfile
